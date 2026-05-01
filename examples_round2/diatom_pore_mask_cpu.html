@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Diatom Pore Mask CPU</title>
+<script src="https://cdn.jsdelivr.net/npm/p5@1.9.4/lib/p5.min.js"></script>
+<style>body{margin:0;background:#001;color:white;font-family:monospace}.hud{position:fixed;left:12px;top:12px;background:rgba(0,0,0,.6);padding:10px;border-radius:8px}</style>
+</head>
+<body>
+<div class="hud"><b>Diatom Pore Mask</b><br>cyclic symmetry + pores + rings<br>[s] save</div>
+<script>
+let symmetry=12;
+function setup(){createCanvas(900,900);pixelDensity(1);noiseDetail(5,.55);noLoop();}
+function fold(u,v){
+  let r=sqrt(u*u+v*v), a=atan2(v,u);
+  a*=symmetry;
+  a=abs(((a+PI)%TWO_PI+TWO_PI)%TWO_PI-PI);
+  return [cos(a)*r,sin(a)*r,r,a];
+}
+function draw(){
+  loadPixels();
+  for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+    let u=(x/width-.5)*2, v=(y/height-.5)*2;
+    let f=fold(u,v); let fx=f[0], fy=f[1], r=f[2], a=f[3];
+    let n=noise(fx*7+20,fy*7+30);
+    let rings=sin(r*70+n*4);
+    let spokes=sin(a*5+r*10);
+    let pores=(n+.25*rings+.2*spokes);
+    let poreMask=pores>.56 && r<.92 && r>.08 ? 1:0;
+    let rib=abs(rings)>.92 || abs(spokes)>.94 ? 1:0;
+    let edge=smoothstep(.95,.75,r);
+    let val=max(rib*.9, poreMask*.65)*edge;
+    let p=4*(x+y*width);
+    pixels[p]=255*(0.1+val*.75);
+    pixels[p+1]=255*(0.45+val*.5);
+    pixels[p+2]=255*(0.75+val*.25);
+    pixels[p+3]=255;
+  }
+  updatePixels();
+}
+function keyPressed(){if(key==='s'||key==='S')saveCanvas('diatom_pore_mask','png');}
+</script>
+</body>
+</html>

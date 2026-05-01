@@ -1,0 +1,89 @@
+{
+  "presets": [
+    {
+      "name": "diatom_halo_engine",
+      "engine": "cyclic_multiscale_turing",
+      "scales": [
+        1,
+        2,
+        4,
+        8,
+        16,
+        32
+      ],
+      "inhibitorMultiplier": 2.4,
+      "step": 0.012,
+      "symmetry": 12,
+      "domainWarp": 0.08,
+      "growthBias": 0.12,
+      "palette": "opal_silica"
+    },
+    {
+      "name": "fungal_cathedral_bloom",
+      "engine": "growth_multiscale_turing",
+      "scales": [
+        1,
+        3,
+        6,
+        12,
+        24
+      ],
+      "inhibitorMultiplier": 2.1,
+      "step": 0.018,
+      "symmetry": 1,
+      "domainWarp": 0.35,
+      "growthBias": 0.55,
+      "palette": "spore_absinthe"
+    },
+    {
+      "name": "art_nouveau_vascular_lace",
+      "engine": "contour_multiscale_turing",
+      "scales": [
+        2,
+        4,
+        8,
+        16,
+        32
+      ],
+      "inhibitorMultiplier": 2.6,
+      "step": 0.01,
+      "symmetry": 2,
+      "domainWarp": 0.18,
+      "growthBias": 0.22,
+      "palette": "cream_gold_green"
+    },
+    {
+      "name": "mesoamerican_cell_glyph_field",
+      "engine": "quantized_cyclic_turing",
+      "scales": [
+        2,
+        5,
+        10,
+        20
+      ],
+      "inhibitorMultiplier": 2.0,
+      "step": 0.02,
+      "symmetry": 8,
+      "domainWarp": 0.12,
+      "growthBias": 0.1,
+      "palette": "turquoise_obsidian_maize"
+    },
+    {
+      "name": "opal_embryo_armor",
+      "engine": "crystalline_morphogenesis",
+      "scales": [
+        1,
+        2,
+        4,
+        8,
+        16
+      ],
+      "inhibitorMultiplier": 2.5,
+      "step": 0.014,
+      "symmetry": 5,
+      "domainWarp": 0.25,
+      "growthBias": 0.35,
+      "palette": "spectral_opal_hotpink"
+    }
+  ]
+}

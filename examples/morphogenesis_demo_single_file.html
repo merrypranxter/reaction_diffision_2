@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Multi-Scale Turing CPU Demo</title>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.4/lib/p5.min.js"></script>
+  <style>
+    body { margin:0; background:#111; color:#eee; font-family:monospace; }
+    .hud { position:fixed; left:12px; top:12px; background:rgba(0,0,0,.55); padding:10px; border-radius:8px; }
+    button { margin-top:6px; }
+  </style>
+</head>
+<body>
+<div class="hud">
+  <b>morphogenesis_beyond_gray_scott</b><br>
+  CPU multi-scale Turing sketch<br>
+  keys: [r] reset, [s] save PNG
+</div>
+<script>
+let W = 220;
+let H = 220;
+let field, nextField;
+let scales = [1, 2, 4, 8, 16];
+let inhibitorMult = 2.2;
+let stepSize = 0.018;
+let itersPerFrame = 2;
+
+function setup() {
+  createCanvas(660, 660);
+  pixelDensity(1);
+  resetField();
+}
+
+function resetField() {
+  field = new Float32Array(W * H);
+  nextField = new Float32Array(W * H);
+  for (let i = 0; i < field.length; i++) field[i] = random();
+}
+
+function idx(x, y) {
+  x = (x + W) % W;
+  y = (y + H) % H;
+  return x + y * W;
+}
+
+function avgRadius(x, y, r) {
+  let sum = 0, count = 0;
+  let rr = r * r;
+  for (let oy = -r; oy <= r; oy++) {
+    for (let ox = -r; ox <= r; ox++) {
+      if (ox*ox + oy*oy <= rr) {
+        sum += field[idx(x + ox, y + oy)];
+        count++;
+      }
+    }
+  }
+  return sum / count;
+}
+
+function normalizeArray(arr) {
+  let mn = Infinity, mx = -Infinity;
+  for (let v of arr) { if (v < mn) mn = v; if (v > mx) mx = v; }
+  let d = mx - mn || 1;
+  for (let i = 0; i < arr.length; i++) arr[i] = (arr[i] - mn) / d;
+}
+
+function stepTuring() {
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      let bestAbs = Infinity;
+      let selected = 0;
+
+      for (let s = 0; s < scales.length; s++) {
+        let rA = scales[s];
+        let rB = max(2, floor(rA * inhibitorMult));
+        let a = avgRadius(x, y, rA);
+        let b = avgRadius(x, y, rB);
+        let response = a - b;
+        let ar = abs(response);
+
+        if (ar < bestAbs) {
+          bestAbs = ar;
+          selected = response;
+        }
+      }
+
+      let v = field[idx(x, y)] + (selected > 0 ? stepSize : -stepSize);
+      nextField[idx(x, y)] = constrain(v, 0, 1);
+    }
+  }
+  normalizeArray(nextField);
+  [field, nextField] = [nextField, field];
+}
+
+function draw() {
+  for (let i = 0; i < itersPerFrame; i++) stepTuring();
+
+  loadPixels();
+  for (let py = 0; py < height; py++) {
+    for (let px = 0; px < width; px++) {
+      let x = floor(px / width * W);
+      let y = floor(py / height * H);
+      let v = field[idx(x, y)];
+
+      // loud fungal-opal-ish palette
+      let r = 255 * pow(v, 0.55);
+      let g = 255 * abs(sin(v * PI * 1.5));
+      let b = 255 * (1.0 - pow(v, 1.8));
+      let p = 4 * (px + py * width);
+      pixels[p] = r;
+      pixels[p+1] = g;
+      pixels[p+2] = b;
+      pixels[p+3] = 255;
+    }
+  }
+  updatePixels();
+}
+
+function keyPressed() {
+  if (key === 'r' || key === 'R') resetField();
+  if (key === 's' || key === 'S') saveCanvas('multiscale_turing_mask', 'png');
+}
+</script>
+</body>
+</html>
