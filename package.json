@@ -1,0 +1,20 @@
+{
+  "name": "morphogenesis_beyond_gray_scott",
+  "version": "0.1.0",
+  "description": "Generative morphogenesis art engine beyond Gray-Scott: multi-scale Turing patterns, cyclic symmetry, growth fields, WebGPU plans, p5 demos, and style-export bridges.",
+  "type": "module",
+  "scripts": {
+    "notes": "echo Open p5/multiscale_turing_cpu.html or examples/morphogenesis_demo_single_file.html in a browser"
+  },
+  "keywords": [
+    "generative-art",
+    "morphogenesis",
+    "reaction-diffusion",
+    "turing-patterns",
+    "webgpu",
+    "p5js",
+    "shader-art",
+    "cyclic-symmetry"
+  ],
+  "license": "MIT"
+}

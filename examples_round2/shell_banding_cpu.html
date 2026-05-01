@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Shell Banding CPU</title>
+<script src="https://cdn.jsdelivr.net/npm/p5@1.9.4/lib/p5.min.js"></script>
+<style>body{margin:0;background:#100;color:white;font-family:monospace}.hud{position:fixed;left:12px;top:12px;background:rgba(0,0,0,.6);padding:10px;border-radius:8px}</style>
+</head>
+<body>
+<div class="hud"><b>Shell Memory Scroll</b><br>polar growth banding / fake shell morphogenesis<br>[s] save</div>
+<script>
+function setup(){createCanvas(900,900);pixelDensity(1);noLoop();}
+function fbm(x,y){
+  let v=0,a=.5,f=1;
+  for(let i=0;i<5;i++){v+=a*noise(x*f,y*f);f*=2.03;a*=.52;}
+  return v;
+}
+function draw(){
+  loadPixels();
+  for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+    let u=(x/width-.5)*2, v=(y/height-.5)*2;
+    let r=sqrt(u*u+v*v);
+    let a=atan2(v,u);
+    let spiral=a+log(r+.08)*2.4;
+    let n=fbm(a*2.0+10,r*8.0);
+    let bands=sin(r*55 + n*8 + spiral*4);
+    let spots=sin(a*18 + r*25 + fbm(u*5,v*5)*10);
+    let shell=smoothstep(-.2,.8,bands+spots*.35);
+    let mask=smoothstep(.98,.35,r);
+    let val=shell*mask;
+    let p=4*(x+y*width);
+    pixels[p]=255*(0.9*val + 0.1*n);
+    pixels[p+1]=255*(0.55*val + 0.25*sin(val*6.28));
+    pixels[p+2]=255*(0.25+0.75*(1.0-val)*mask);
+    pixels[p+3]=255;
+  }
+  updatePixels();
+}
+function keyPressed(){if(key==='s'||key==='S')saveCanvas('shell_memory_scroll','png');}
+</script>
+</body>
+</html>

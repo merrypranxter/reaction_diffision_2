@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Growth Field Texture CPU Demo</title>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.4/lib/p5.min.js"></script>
+  <style>body{margin:0;background:#111;color:white;font-family:monospace}.hud{position:fixed;left:12px;top:12px;background:rgba(0,0,0,.6);padding:10px;border-radius:8px}</style>
+</head>
+<body>
+<div class="hud"><b>Growth Field Texture</b><br>radial/curl-biased morphogenesis sketch<br>[r] reset [s] save</div>
+<script>
+let W=220,H=220,field,nextField;
+function setup(){createCanvas(660,660);pixelDensity(1);resetField();}
+function resetField(){field=new Float32Array(W*H);nextField=new Float32Array(W*H);for(let i=0;i<field.length;i++)field[i]=random();}
+function idx(x,y){x=(x+W)%W;y=(y+H)%H;return x+y*W;}
+function sample(x,y){return field[idx(floor(x),floor(y))];}
+function avg(x,y,r){let sum=0,c=0;for(let oy=-r;oy<=r;oy++)for(let ox=-r;ox<=r;ox++){sum+=field[idx(x+ox,y+oy)];c++;}return sum/c;}
+function norm(a){let mn=Infinity,mx=-Infinity;for(let v of a){mn=min(mn,v);mx=max(mx,v)}let d=mx-mn||1;for(let i=0;i<a.length;i++)a[i]=(a[i]-mn)/d;}
+function step(){
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    let u=x/W-.5,v=y/H-.5;
+    let len=sqrt(u*u+v*v)+.0001;
+    let radial=createVector(u/len,v/len);
+    let curl=createVector(-radial.y,radial.x);
+    let dir=p5.Vector.lerp(radial,curl,0.55);
+    let ahead=sample(x+dir.x*5,y+dir.y*5);
+    let behind=sample(x-dir.x*5,y-dir.y*5);
+    let growth=(ahead-behind)*0.08;
+    let local=avg(x,y,2)-avg(x,y,7);
+    let current=field[idx(x,y)];
+    nextField[idx(x,y)] = constrain(current + (local>0?.012:-.012) + growth,0,1);
+  }
+  norm(nextField);[field,nextField]=[nextField,field];
+}
+function draw(){
+  for(let i=0;i<2;i++)step();
+  loadPixels();
+  for(let py=0;py<height;py++)for(let px=0;px<width;px++){
+    let x=floor(px/width*W),y=floor(py/height*H),v=field[idx(x,y)];
+    let p=4*(px+py*width);
+    pixels[p]=255*pow(v,.45);
+    pixels[p+1]=255*abs(sin(v*TWO_PI));
+    pixels[p+2]=255*(1-v);
+    pixels[p+3]=255;
+  }
+  updatePixels();
+}
+function keyPressed(){if(key==='r'||key==='R')resetField();if(key==='s'||key==='S')saveCanvas('growth_field_texture','png');}
+</script>
+</body>
+</html>

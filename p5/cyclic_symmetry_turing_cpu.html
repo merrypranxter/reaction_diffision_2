@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Cyclic Symmetry Turing CPU Demo</title>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.4/lib/p5.min.js"></script>
+  <style>body{margin:0;background:#090909;color:white;font-family:monospace}.hud{position:fixed;left:12px;top:12px;background:rgba(0,0,0,.55);padding:10px;border-radius:8px}</style>
+</head>
+<body>
+<div class="hud">
+  <b>Cyclic Symmetric Turing</b><br>
+  keys: [r] reset, [s] save, [1-9] symmetry
+</div>
+<script>
+let W = 240, H = 240, field, nextField;
+let scales = [1,2,4,8,16];
+let inhibitorMult = 2.4;
+let stepSize = 0.015;
+let symmetry = 8;
+
+function setup(){ createCanvas(720,720); pixelDensity(1); resetField(); }
+function resetField(){ field = new Float32Array(W*H); nextField = new Float32Array(W*H); for(let i=0;i<field.length;i++) field[i]=random(); }
+function idx(x,y){ x=(x+W)%W; y=(y+H)%H; return x+y*W; }
+
+function avgRadius(x,y,r){
+  let sum=0,count=0,rr=r*r;
+  for(let oy=-r;oy<=r;oy++) for(let ox=-r;ox<=r;ox++){
+    if(ox*ox+oy*oy<=rr){ sum+=field[idx(x+ox,y+oy)]; count++; }
+  }
+  return sum/count;
+}
+function normalize(a){ let mn=Infinity,mx=-Infinity; for(let v of a){mn=min(mn,v);mx=max(mx,v);} let d=mx-mn||1; for(let i=0;i<a.length;i++) a[i]=(a[i]-mn)/d; }
+
+function stepTuring(){
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){
+    let best=Infinity, selected=0;
+    for(let rA of scales){
+      let rB=max(2,floor(rA*inhibitorMult));
+      let response=avgRadius(x,y,rA)-avgRadius(x,y,rB);
+      if(abs(response)<best){ best=abs(response); selected=response; }
+    }
+    nextField[idx(x,y)] = constrain(field[idx(x,y)] + (selected>0?stepSize:-stepSize),0,1);
+  }
+  normalize(nextField); [field,nextField]=[nextField,field];
+}
+
+function foldedSample(u,v){
+  let x=u-0.5, y=v-0.5;
+  let r=sqrt(x*x+y*y);
+  let a=atan2(y,x);
+  let tau=TWO_PI;
+  a *= symmetry;
+  a = abs(((a + PI) % tau + tau) % tau - PI);
+  let fu=cos(a)*r+0.5, fv=sin(a)*r+0.5;
+  return field[idx(floor(fu*W), floor(fv*H))];
+}
+
+function draw(){
+  for(let i=0;i<2;i++) stepTuring();
+  loadPixels();
+  for(let py=0;py<height;py++) for(let px=0;px<width;px++){
+    let u=px/width, v=py/height;
+    let val=foldedSample(u,v);
+    let edge=abs(val-0.5)*2.0;
+    let rr=255*abs(sin(val*PI*2.0+0.1));
+    let gg=255*pow(val,0.35);
+    let bb=255*pow(1.0-val,0.7);
+    let p=4*(px+py*width);
+    pixels[p]=rr+edge*60; pixels[p+1]=gg; pixels[p+2]=bb+edge*80; pixels[p+3]=255;
+  }
+  updatePixels();
+}
+
+function keyPressed(){
+  if(key==='r'||key==='R') resetField();
+  if(key==='s'||key==='S') saveCanvas('cyclic_symmetric_turing','png');
+  if(key>='1'&&key<='9') symmetry=int(key);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "engine": "string",
+  "seed": "number",
+  "width": "number",
+  "height": "number",
+  "iterations": "number",
+  "scales": [
+    "number"
+  ],
+  "inhibitorMultiplier": "number",
+  "step": "number",
+  "symmetry": "number",
+  "domainWarp": "number",
+  "growthBias": "number",
+  "palette": "string",
+  "outputs": {
+    "mask": "mask.png",
+    "color": "color.png",
+    "height": "height.png",
+    "contours": "contours.svg"
+  }
+}
